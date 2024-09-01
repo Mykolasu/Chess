@@ -2,8 +2,10 @@ import React from 'react';
 
 const CellComponent = () => {
     return (
-        <div>
-            
+        <div
+        className='cell'
+        >
+
         </div>
     );
 }
