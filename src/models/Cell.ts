@@ -18,6 +18,6 @@ export class Cell {
         this.figure = figure;
         this.board = board;
         this.available = false;
-        this.id = new Date().valueOf();;
+        this.id = new Date().valueOf();
     }
 }
