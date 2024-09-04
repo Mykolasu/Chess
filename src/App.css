@@ -9,6 +9,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: rgb(119, 148, 148);
 }
 
 .board {
@@ -25,10 +26,16 @@
     align-items: center;
 }
 
+.cell img {
+    width: 54px;
+    height: 54px;
+    position: relative;
+}
+
 .black {
     background-color: rgb(66, 62, 107);
 }
 
 .white {
-    background-color: rgb(227, 226, 209);
+    background-color: rgb(167, 165, 135);
 }
