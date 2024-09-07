@@ -8,14 +8,16 @@ interface CellProps {
 }
 
 const CellComponent: FC<CellProps> = ({ cell, selected, click }) => {
+  const handleClick = () => click(cell);
+
+  const cellClass = `cell ${cell.color} ${selected ? "selected" : ""} ${
+    cell.available && cell.figure ? "highlight" : ""
+  }`;
+
   return (
-    <div
-      className={["cell", cell.color, selected ? "selected" : ""].join(" ")}
-      onClick={() => click(cell)}
-      style={{background: cell.available && cell.figure ? 'green' : ''}}
-    >
-        {cell.available && !cell.figure && <div className={"available"}/>}
-      {cell.figure?.logo && <img src={cell.figure.logo} alt="" />}
+    <div className={cellClass} onClick={handleClick}>
+      {cell.available && !cell.figure && <div className="available" />}
+      {cell.figure?.logo && <img src={cell.figure.logo} alt="figure logo" />}
     </div>
   );
 };

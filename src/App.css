@@ -1,6 +1,18 @@
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --board-size: 64px;
+    --cell-size: var(--board-size);
+    --available-size: 12px;
+    --background-selected: rgb(184, 36, 68);
+    --background-available: rgba(59, 167, 110, 0.55);
+    --background-highlight: green;
+    --background-black: rgb(66, 62, 107);
+    --background-white: rgb(167, 165, 135);
 }
 
 .app {
@@ -13,40 +25,45 @@
 }
 
 .board {
-    width: calc(64px * 8);
-    height: calc(64px * 8);
+    width: calc(var(--board-size) * 8);
+    height: calc(var(--board-size) * 8);
     display: flex;
     flex-wrap: wrap;
 }
+
 .cell {
-    width: 64px;
-    height: 64px;
+    width: var(--cell-size);
+    height: var(--cell-size);
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: background 0.3s ease;
 }
 
 .cell img {
-    width: 54px;
-    height: 54px;
-    position: relative;
+    width: calc(var(--cell-size) - 10px);
+    height: calc(var(--cell-size) - 10px);
 }
 
 .black {
-    background-color: rgb(66, 62, 107);
+    background-color: var(--background-black);
 }
 
 .white {
-    background-color: rgb(167, 165, 135);
+    background-color: var(--background-white);
 }
 
 .selected {
-    background: rgb(184, 36, 68);
+    background-color: var(--background-selected);
+}
+
+.highlight {
+    background-color: var(--background-highlight);
 }
 
 .available {
-    height: 12px;
-    width: 12px;
+    height: var(--available-size);
+    width: var(--available-size);
     border-radius: 50%;
-    background-color: rgba(59, 167, 110, 0.55);
+    background-color: var(--background-available);
 }
