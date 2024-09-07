@@ -16,6 +16,20 @@ export class King extends Figure {
         if (!super.canMove(target)) {
             return false;
         }
-        return true;
+        const absX = Math.abs(target.x - this.cell.x);
+        const absY = Math.abs(target.y - this.cell.y);
+        if (absY !== 1 && absX !== 1) {
+            return false;
+        }
+        if (this.cell.isAvailableVertically(target)) {
+            return true;
+        }
+        if (this.cell.isAvailableHorizontally(target)) {
+            return true;
+        }
+        if (this.cell.isAvailableDiagonal(target)) {
+            return true;
+        }
+        return false
     }
 }
