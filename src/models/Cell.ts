@@ -18,7 +18,7 @@ export class Cell {
         this.figure = figure;
         this.board = board;
         this.available = false;
-        this.id = new Date().valueOf();
+        this.id = Math.floor(Math.random() * Math.floor(Math.random() * Date.now()));
     }
 
     isEmpty(): boolean {
