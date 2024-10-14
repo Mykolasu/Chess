@@ -8,7 +8,7 @@
     --board-size: 64px;
     --cell-size: var(--board-size);
     --available-size: 12px;
-    --background-selected: rgb(184, 36, 68);
+    --background-selected: rgba(184, 36, 68, 0.922);
     --background-available: rgba(59, 167, 110, 0.55);
     --background-highlight: green;
     --background-black: rgb(66, 62, 107);
@@ -59,7 +59,7 @@
 }
 
 .highlight {
-    background-color: var(--background-highlight);
+    border: calc(var(--cell-size) / 16) solid var(--background-available);
 }
 
 .available {
