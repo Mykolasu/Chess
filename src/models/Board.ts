@@ -23,111 +23,71 @@ export class Board {
 
   public initCells() {
     for (let i = 0; i < 8; i++) {
-      const row: Cell[] = [];
-      for (let j = 0; j < 8; j++) {
-        if ((i + j) % 2 !== 0) {
-          row.push(new Cell(this, j, i, Colors.BLACK, null));
-        } else {
-          row.push(new Cell(this, j, i, Colors.WHITE, null));
-        }
-      }
+      const row = Array.from({ length: 8 }, (_, j) =>
+        new Cell(this, j, i, (i + j) % 2 === 0 ? Colors.WHITE : Colors.BLACK, null)
+      );
       this.cells.push(row);
     }
   }
 
   public isCellUnderAttack(targetCell: Cell, enemyColor: Colors): boolean {
-    for (let i = 0; i < this.cells.length; i++) {
-      let row = this.cells[i];
-      let cellWithCheckFigure = row.find(
-        (cell) =>
+    return this.cells.some(row =>
+      row.some(
+        cell =>
           cell.figure &&
           cell.figure.color === enemyColor &&
           cell.figure.canMove(targetCell)
-      );
-      if (cellWithCheckFigure) return true;
-    }
-    return false;
+      )
+    );
   }
 
-  public isAvailableMove(
-    figure: Figure,
-    startCell: Cell,
-    targetCell: Cell
-  ): boolean {
-    let targetFigure = targetCell.figure;
+  public isAvailableMove(figure: Figure, startCell: Cell, targetCell: Cell): boolean {
+    const originalFigure = targetCell.figure;
     targetCell.figure = figure;
-    figure.cell = targetCell;
-    startCell.figure = null;
-    let king: any;
-    if (figure.color === Colors.WHITE) {
-      king = this.whiteKing;
-    } else {
-      king = this.blackKing;
-    }
-    var isKingUnderAttack: boolean = this.isCellUnderAttack(
-      king.cell,
-      this.getOppositeColor(king.color)
-    );
-    figure.cell = startCell;
-    startCell.figure = figure;
-    targetCell.figure = targetFigure;
+    const king = figure.color === Colors.WHITE ? this.whiteKing : this.blackKing;
+    const isKingUnderAttack = king ? this.isCellUnderAttack(king.cell, this.getOppositeColor(king.color)) : false;
 
+    targetCell.figure = originalFigure; // Revert target cell to its original state
     return !isKingUnderAttack;
   }
 
-  isFigureHasAnyMove(figure: Figure): boolean {
-    for (let j = 0; j < this.cells.length; j++) {
-      for (let i = 0; i < this.cells.length; i++) {
-        const targetCell = this.getCell(j, i);
-        if (
-          figure?.canMove(targetCell) &&
-          this.isAvailableMove(figure, figure.cell, targetCell)
-        )
-          return true;
-      }
-    }
-    return false;
+  public isFigureHasAnyMove(figure: Figure): boolean {
+    return this.cells.some(row =>
+      row.some(
+        cell =>
+          figure.canMove(cell) && this.isAvailableMove(figure, figure.cell, cell)
+      )
+    );
   }
 
-  checkIsMate(playerColor: Colors): boolean {
-    for (let k = 0; k < this.cells.length; k++) {
-      for (let i = 0; i < this.cells.length; i++) {
-        const cell = this.getCell(k, i);
-        if (
+  public checkIsMate(playerColor: Colors): boolean {
+    return !this.cells.some(row =>
+      row.some(
+        cell =>
           cell.figure &&
           cell.figure.color === playerColor &&
           this.isFigureHasAnyMove(cell.figure)
-        )
-          return false;
-      }
-    }
-    return true;
+      )
+    );
   }
 
   public getCopyBoard(): Board {
     const newBoard = new Board();
-    newBoard.isMate = this.isMate;
-    newBoard.cells = this.cells;
-    newBoard.lostWhiteFigures = this.lostWhiteFigures;
-    newBoard.lostBlackFigures = this.lostBlackFigures;
-    newBoard.whiteKing = this.whiteKing;
-    newBoard.blackKing = this.blackKing;
+    Object.assign(newBoard, this, { cells: this.cells });
     return newBoard;
   }
 
   public highLightCells(selectedCell: Cell | null) {
-    for (let i = 0; i < this.cells.length; i++) {
-      const row = this.cells[i];
-      for (let j = 0; j < this.cells.length; j++) {
-        const target = row[j];
-        target.available = !!(
-          selectedCell?.figure?.canMove(target) &&
-          this.isAvailableMove(selectedCell.figure, selectedCell, target)
-        );
-      }
-    }
+    this.cells.forEach(row =>
+      row.forEach(
+        target =>
+          (target.available = !!(
+            selectedCell?.figure?.canMove(target) &&
+            this.isAvailableMove(selectedCell.figure, selectedCell, target)
+          ))
+      )
+    );
   }
-
   public getCell(x: number, y: number) {
     return this.cells[y][x];
   }
@@ -141,54 +101,25 @@ export class Board {
   }
 
   public addFigures() {
-    this.addFigure(
-      Pawn,
-      Colors.BLACK,
-      Array(8)
-        .fill(0)
-        .map((_, i) => [i, 1])
+    const figureConfig = [
+      { figure: Pawn, color: Colors.BLACK, positions: Array.from({ length: 8 }, (_, i): [number, number] => [i, 1]) },
+      { figure: Pawn, color: Colors.WHITE, positions: Array.from({ length: 8 }, (_, i): [number, number] => [i, 6]) },
+      { figure: Knight, color: Colors.BLACK, positions: [[1, 0], [6, 0]] as [number, number][] },
+      { figure: Knight, color: Colors.WHITE, positions: [[1, 7], [6, 7]] as [number, number][] },
+      { figure: Bishop, color: Colors.BLACK, positions: [[2, 0], [5, 0]] as [number, number][] },
+      { figure: Bishop, color: Colors.WHITE, positions: [[2, 7], [5, 7]] as [number, number][] },
+      { figure: Queen, color: Colors.BLACK, positions: [[3, 0]] as [number, number][] },
+      { figure: Queen, color: Colors.WHITE, positions: [[3, 7]] as [number, number][] },
+      { figure: Rook, color: Colors.BLACK, positions: [[0, 0], [7, 0]] as [number, number][] },
+      { figure: Rook, color: Colors.WHITE, positions: [[0, 7], [7, 7]] as [number, number][] },
+    ];    
+
+    figureConfig.forEach(({ figure, color, positions }) =>
+      this.addFigure(figure, color, positions)
     );
-    this.addFigure(
-      Pawn,
-      Colors.WHITE,
-      Array(8)
-        .fill(0)
-        .map((_, i) => [i, 6])
-    );
 
-    this.addFigure(Knight, Colors.BLACK, [
-      [1, 0],
-      [6, 0],
-    ]);
-    this.addFigure(Knight, Colors.WHITE, [
-      [1, 7],
-      [6, 7],
-    ]);
-
-    const blackKing = new King(Colors.BLACK, this.getCell(4, 0));
-    const whiteKing = new King(Colors.WHITE, this.getCell(4, 7));
-    this.blackKing = blackKing;
-    this.whiteKing = whiteKing;
-
-    this.addFigure(Bishop, Colors.BLACK, [
-      [2, 0],
-      [5, 0],
-    ]);
-    this.addFigure(Bishop, Colors.WHITE, [
-      [2, 7],
-      [5, 7],
-    ]);
-
-    this.addFigure(Queen, Colors.BLACK, [[3, 0]]);
-    this.addFigure(Queen, Colors.WHITE, [[3, 7]]);
-
-    this.addFigure(Rook, Colors.BLACK, [
-      [0, 0],
-      [7, 0],
-    ]);
-    this.addFigure(Rook, Colors.WHITE, [
-      [0, 7],
-      [7, 7],
-    ]);
+    // Assign kings separately to track their positions
+    this.whiteKing = new King(Colors.WHITE, this.getCell(4, 7));
+    this.blackKing = new King(Colors.BLACK, this.getCell(4, 0));
   }
 }
