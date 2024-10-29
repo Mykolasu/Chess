@@ -6,16 +6,17 @@ import { Player } from "./models/Player";
 import { Colors } from "./models/Colors";
 import LostFigures from "./components/LostFigures";
 import Timer from "./components/Timer";
+import { Cell } from './models/Cell';
 
 const App = () => {
   const [board, setBoard] = useState(new Board());
   const [whitePlayer, setWhitePlayer] = useState(new Player(Colors.WHITE));
   const [blackPlayer, setblackPlayer] = useState(new Player(Colors.BLACK));
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 
   useEffect(() => {
     restart();
-    setCurrentPlayer(whitePlayer);
   }, []);
 
   function restart() {
@@ -23,6 +24,8 @@ const App = () => {
     newBoard.initCells();
     newBoard.addFigures();
     setBoard(newBoard);
+    setSelectedCell(null); 
+    setCurrentPlayer(whitePlayer);
   }
 
   function swapPlayer() {
@@ -34,10 +37,16 @@ const App = () => {
   return (
     <div className="app">
       <Timer
-        restart={restart}
+        selectedCell={selectedCell}
+        setSelectedCell={setSelectedCell}
+        board={board}
         currentPlayer={currentPlayer}
+        restart={restart}
+        swapPlayer={swapPlayer}
       />
       <BoardComponent
+        selectedCell={selectedCell}
+        setSelectedCell={setSelectedCell}
         board={board}
         setBoard={setBoard}
         currentPlayer={currentPlayer}

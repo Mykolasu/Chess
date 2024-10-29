@@ -8,6 +8,7 @@ interface CellProps {
 }
 
 const CellComponent: FC<CellProps> = ({ cell, selected, click }) => {
+  
   const handleClick = () => click(cell);
 
   const cellClass = `cell ${cell.color} ${selected ? "selected" : ""} ${

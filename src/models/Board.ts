@@ -21,18 +21,30 @@ export class Board {
     return color === Colors.WHITE ? Colors.BLACK : Colors.WHITE;
   }
 
-  public isCellUnderAttack(targetCell: Cell, enemyColor: Colors): boolean {
-    for (const row of this.cells) {
-      if (
-        row.some(
-          (cell) =>
-            cell.figure &&
-            cell.figure.color === enemyColor &&
-            cell.figure.canMove(targetCell)
-        )
-      ) {
-        return true;
+  public initCells() {
+    for (let i = 0; i < 8; i++) {
+      const row: Cell[] = [];
+      for (let j = 0; j < 8; j++) {
+        if ((i + j) % 2 !== 0) {
+          row.push(new Cell(this, j, i, Colors.BLACK, null));
+        } else {
+          row.push(new Cell(this, j, i, Colors.WHITE, null));
+        }
       }
+      this.cells.push(row);
+    }
+  }
+
+  public isCellUnderAttack(targetCell: Cell, enemyColor: Colors): boolean {
+    for (let i = 0; i < this.cells.length; i++) {
+      let row = this.cells[i];
+      let cellWithCheckFigure = row.find(
+        (cell) =>
+          cell.figure &&
+          cell.figure.color === enemyColor &&
+          cell.figure.canMove(targetCell)
+      );
+      if (cellWithCheckFigure) return true;
     }
     return false;
   }
@@ -64,65 +76,54 @@ export class Board {
   }
 
   isFigureHasAnyMove(figure: Figure): boolean {
-    for (const row of this.cells) {
-      for (const targetCell of row) {
+    for (let j = 0; j < this.cells.length; j++) {
+      for (let i = 0; i < this.cells.length; i++) {
+        const targetCell = this.getCell(j, i);
         if (
-          figure.canMove(targetCell) &&
+          figure?.canMove(targetCell) &&
           this.isAvailableMove(figure, figure.cell, targetCell)
-        ) {
+        )
           return true;
-        }
       }
     }
     return false;
   }
 
   checkIsMate(playerColor: Colors): boolean {
-    for (const row of this.cells) {
-      for (const cell of row) {
+    for (let k = 0; k < this.cells.length; k++) {
+      for (let i = 0; i < this.cells.length; i++) {
+        const cell = this.getCell(k, i);
         if (
           cell.figure &&
           cell.figure.color === playerColor &&
           this.isFigureHasAnyMove(cell.figure)
-        ) {
+        )
           return false;
-        }
       }
     }
-    console.log("bt");
     return true;
-  }
-
-  public initCells() {
-    this.cells = Array.from({ length: 8 }, (_, i) =>
-      Array.from(
-        { length: 8 },
-        (_, j) =>
-          new Cell(
-            this,
-            j,
-            i,
-            (i + j) % 2 === 0 ? Colors.WHITE : Colors.BLACK,
-            null
-          )
-      )
-    );
   }
 
   public getCopyBoard(): Board {
     const newBoard = new Board();
+    newBoard.isMate = this.isMate;
     newBoard.cells = this.cells;
     newBoard.lostWhiteFigures = this.lostWhiteFigures;
     newBoard.lostBlackFigures = this.lostBlackFigures;
+    newBoard.whiteKing = this.whiteKing;
+    newBoard.blackKing = this.blackKing;
     return newBoard;
   }
 
-  public highlightCells(selectedCell: Cell | null) {
+  public highLightCells(selectedCell: Cell | null) {
     for (let i = 0; i < this.cells.length; i++) {
       const row = this.cells[i];
-      for (let j = 0; j < row.length; j++) {
+      for (let j = 0; j < this.cells.length; j++) {
         const target = row[j];
-        target.available = !!selectedCell?.figure?.canMove(target);
+        target.available = !!(
+          selectedCell?.figure?.canMove(target) &&
+          this.isAvailableMove(selectedCell.figure, selectedCell, target)
+        );
       }
     }
   }
@@ -164,8 +165,10 @@ export class Board {
       [6, 7],
     ]);
 
-    this.addFigure(King, Colors.BLACK, [[4, 0]]);
-    this.addFigure(King, Colors.WHITE, [[4, 7]]);
+    const blackKing = new King(Colors.BLACK, this.getCell(4, 0));
+    const whiteKing = new King(Colors.WHITE, this.getCell(4, 7));
+    this.blackKing = blackKing;
+    this.whiteKing = whiteKing;
 
     this.addFigure(Bishop, Colors.BLACK, [
       [2, 0],

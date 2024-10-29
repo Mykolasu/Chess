@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import cl from "./endOfTheGame.module.css";
+import cl from "./styleModalEndGame.module.css";
 import { Colors } from "../../models/Colors";
 import { Player } from "../../models/Player";
 import { Board } from "../../models/Board";

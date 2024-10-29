@@ -21,42 +21,45 @@ const BoardComponent: FC<BoardProps> = ({
   setSelectedCell,
   selectedCell,
 }) => {
-  // const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
+  function click(cell: Cell) {
+    if (
+      selectedCell &&
+      selectedCell !== cell &&
+      selectedCell.figure?.canMove(cell)
+    ) {
+      if (!board.isAvailableMove(selectedCell.figure, selectedCell, cell))
+        return;
+      selectedCell?.moveFigure(cell);
+      swapPlayer();
+      setSelectedCell(null);
+      updateBoard();
+    } else {
+      if (cell.figure?.color === currentPlayer?.color) setSelectedCell(cell);
+    }
+    if (selectedCell) {
+      setSelectedCell(null);
+    }
+    if (selectedCell === null && !cell.figure) {
+      setSelectedCell(null);
+    }
+  }
 
-  const click = useCallback(
-    (cell: Cell) => {
-      if (selectedCell && selectedCell !== cell && selectedCell.figure?.canMove(cell)) {
-        if (!board.isAvailableMove(selectedCell.figure, selectedCell, cell)) return;
-        selectedCell.moveFigure(cell);
-        swapPlayer();
-        setSelectedCell(null);
-        updateBoard();
-      } else if (cell.figure?.color === currentPlayer?.color) {
-        setSelectedCell(cell);
-      } else {
-        setSelectedCell(null);
-      }
-    },
-    [selectedCell, board, swapPlayer, currentPlayer, setSelectedCell]
-  );
-
-  const updateBoard = useCallback(() => {
+  function updateBoard() {
     const newBoard = board.getCopyBoard();
     setBoard(newBoard);
     if (currentPlayer && newBoard.checkIsMate(currentPlayer.color)) {
       newBoard.isMate = true;
-      console.log("Mate?!"); 
     }
-  }, [board, setBoard, currentPlayer]);
+  } 
 
-  const highlightCells = useCallback(() => {
-    board.highlightCells(selectedCell);
+  function highLightCells() {
+    board.highLightCells(selectedCell);
     updateBoard();
-  }, [board, selectedCell, updateBoard]);
+  }
 
   useEffect(() => {
-    highlightCells();
-  }, [selectedCell, highlightCells]);
+    highLightCells();
+  }, [selectedCell]);
 
   return (
     <div>
