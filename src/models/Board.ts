@@ -22,86 +22,51 @@ export class Board {
   }
 
   public initCells() {
-    for (let i = 0; i < 8; i++) {
-      const row: Cell[] = [];
-      for (let j = 0; j < 8; j++) {
-        if ((i + j) % 2 !== 0) {
-          row.push(new Cell(this, j, i, Colors.BLACK, null));
-        } else {
-          row.push(new Cell(this, j, i, Colors.WHITE, null));
-        }
-      }
-      this.cells.push(row);
-    }
+    this.cells = Array.from({ length: 8 }, (_, i) =>
+      Array.from({ length: 8 }, (_, j) => new Cell(this, j, i, (i + j) % 2 !== 0 ? Colors.BLACK : Colors.WHITE, null))
+    );
   }
 
   public isCellUnderAttack(targetCell: Cell, enemyColor: Colors): boolean {
-    for (let i = 0; i < this.cells.length; i++) {
-      let row = this.cells[i];
-      let cellWithCheckFigure = row.find(
-        (cell) =>
-          cell.figure &&
-          cell.figure.color === enemyColor &&
-          cell.figure.canMove(targetCell)
-      );
-      if (cellWithCheckFigure) return true;
-    }
-    return false;
+    return this.cells.some((row) =>
+      row.some((cell) =>
+        cell.figure && cell.figure.color === enemyColor && cell.figure.canMove(targetCell)
+      )
+    );
   }
 
-  public isAvailableMove(
-    figure: Figure,
-    startCell: Cell,
-    targetCell: Cell
-  ): boolean {
-    let targetFigure = targetCell.figure;
+  public isAvailableMove(figure: Figure, startCell: Cell, targetCell: Cell): boolean {
+    const originalTargetFigure = targetCell.figure;
     targetCell.figure = figure;
-    figure.cell = targetCell;
     startCell.figure = null;
-    let king: any;
-    if (figure.color === Colors.WHITE) {
-      king = this.whiteKing;
-    } else {
-      king = this.blackKing;
-    }
-    var isKingUnderAttack: boolean = this.isCellUnderAttack(
-      king.cell,
-      this.getOppositeColor(king.color)
-    );
-    figure.cell = startCell;
+    figure.cell = targetCell;
+
+    const king = figure.color === Colors.WHITE ? this.whiteKing : this.blackKing;
+    const isKingUnderAttack = this.isCellUnderAttack(king!.cell, this.getOppositeColor(king!.color));
+
+    targetCell.figure = originalTargetFigure;
     startCell.figure = figure;
-    targetCell.figure = targetFigure;
+    figure.cell = startCell;
 
     return !isKingUnderAttack;
   }
 
   isFigureHasAnyMove(figure: Figure): boolean {
-    for (let j = 0; j < this.cells.length; j++) {
-      for (let i = 0; i < this.cells.length; i++) {
-        const targetCell = this.getCell(j, i);
-        if (
-          figure?.canMove(targetCell) &&
-          this.isAvailableMove(figure, figure.cell, targetCell)
-        )
-          return true;
-      }
-    }
-    return false;
+    return this.cells.some(row =>
+      row.some(targetCell =>
+        figure.canMove(targetCell) && this.isAvailableMove(figure, figure.cell, targetCell)
+      )
+    );
   }
 
   checkIsMate(playerColor: Colors): boolean {
-    for (let k = 0; k < this.cells.length; k++) {
-      for (let i = 0; i < this.cells.length; i++) {
-        const cell = this.getCell(k, i);
-        if (
-          cell.figure &&
-          cell.figure.color === playerColor &&
-          this.isFigureHasAnyMove(cell.figure)
-        )
-          return false;
-      }
-    }
-    return true;
+    return !this.cells.some(row =>
+      row.some(cell =>
+        cell.figure &&
+        cell.figure.color === playerColor &&
+        this.isFigureHasAnyMove(cell.figure)
+      )
+    );
   }
 
   public getCopyBoard(): Board {
@@ -116,16 +81,14 @@ export class Board {
   }
 
   public highLightCells(selectedCell: Cell | null) {
-    for (let i = 0; i < this.cells.length; i++) {
-      const row = this.cells[i];
-      for (let j = 0; j < this.cells.length; j++) {
-        const target = row[j];
+    this.cells.forEach(row =>
+      row.forEach(target => {
         target.available = !!(
           selectedCell?.figure?.canMove(target) &&
           this.isAvailableMove(selectedCell.figure, selectedCell, target)
         );
-      }
-    }
+      })
+    );
   }
 
   public getCell(x: number, y: number) {
