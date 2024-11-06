@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from "react";
+import React, { FC, useCallback, useEffect } from "react";
 import { Board } from "../models/Board";
 import CellComponent from "./CellComponent";
 import { Cell } from "../models/Cell";
@@ -21,41 +21,36 @@ const BoardComponent: FC<BoardProps> = ({
   setSelectedCell,
   selectedCell,
 }) => {
-  function click(cell: Cell) {
-    if (
-      selectedCell &&
-      selectedCell !== cell &&
-      selectedCell.figure?.canMove(cell)
-    ) {
-      if (!board.isAvailableMove(selectedCell.figure, selectedCell, cell))
-        return;
-      selectedCell?.moveFigure(cell);
-      swapPlayer();
-      setSelectedCell(null);
-      updateBoard();
-    } else {
-      if (cell.figure?.color === currentPlayer?.color) setSelectedCell(cell);
-    }
-    if (selectedCell) {
-      setSelectedCell(null);
-    }
-    if (selectedCell === null && !cell.figure) {
-      setSelectedCell(null);
-    }
-  }
 
-  function updateBoard() {
+  const updateBoard = useCallback(() => {
     const newBoard = board.getCopyBoard();
     setBoard(newBoard);
     if (currentPlayer && newBoard.checkIsMate(currentPlayer.color)) {
       newBoard.isMate = true;
     }
-  } 
+  }, [board, setBoard, currentPlayer]);
 
-  function highLightCells() {
+  const highLightCells = useCallback(() => {
     board.highLightCells(selectedCell);
     updateBoard();
-  }
+  }, [board, selectedCell, updateBoard]);
+
+  const click = useCallback(
+    (cell: Cell) => {
+      if (selectedCell && selectedCell !== cell && selectedCell.figure?.canMove(cell)) {
+        if (!board.isAvailableMove(selectedCell.figure, selectedCell, cell)) return;
+        selectedCell.moveFigure(cell);
+        swapPlayer();
+        setSelectedCell(null);
+        updateBoard();
+      } else if (cell.figure?.color === currentPlayer?.color) {
+        setSelectedCell(cell);
+      } else {
+        setSelectedCell(null);
+      }
+    },
+    [selectedCell, board, swapPlayer, setSelectedCell, updateBoard, currentPlayer]
+  );
 
   useEffect(() => {
     highLightCells();
