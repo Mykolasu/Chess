@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import "./App.css";
 import BoardComponent from "./components/BoardComponent";
 import { Board } from "./models/Board";
@@ -9,30 +9,30 @@ import Timer from "./components/Timer";
 import { Cell } from './models/Cell';
 
 const App = () => {
-  const [board, setBoard] = useState(new Board());
-  const [whitePlayer, setWhitePlayer] = useState(new Player(Colors.WHITE));
-  const [blackPlayer, setblackPlayer] = useState(new Player(Colors.BLACK));
-  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const whitePlayer = useMemo(() => new Player(Colors.WHITE), []);
+  const blackPlayer = useMemo(() => new Player(Colors.BLACK), []);
+  const [currentPlayer, setCurrentPlayer] = useState<Player>(whitePlayer);
   const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
+  const [board, setBoard] = useState<Board>(new Board());
 
   useEffect(() => {
     restart();
   }, []);
 
-  function restart() {
+  const restart = useCallback(() => {
     const newBoard = new Board();
     newBoard.initCells();
     newBoard.addFigures();
     setBoard(newBoard);
-    setSelectedCell(null); 
+    setSelectedCell(null);
     setCurrentPlayer(whitePlayer);
-  }
+  }, [whitePlayer]);
 
-  function swapPlayer() {
-    setCurrentPlayer(
-      currentPlayer?.color === Colors.WHITE ? blackPlayer : whitePlayer
+  const swapPlayer = useCallback(() => {
+    setCurrentPlayer((prev) =>
+      prev.color === Colors.WHITE ? blackPlayer : whitePlayer
     );
-  }
+  }, [blackPlayer, whitePlayer]);
 
   return (
     <div className="app">
