@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useCallback } from "react";
 import { Cell } from "../models/Cell";
 
 interface CellProps {
@@ -9,7 +9,7 @@ interface CellProps {
 
 const CellComponent: FC<CellProps> = ({ cell, selected, click }) => {
   
-  const handleClick = () => click(cell);
+  const handleClick = useCallback(() => click(cell), [cell, click]);
 
   const cellClass = `cell ${cell.color} ${selected ? "selected" : ""} ${
     cell.available && cell.figure ? "highlight" : ""

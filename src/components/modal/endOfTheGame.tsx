@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useMemo, useCallback } from "react";
 import cl from "./styleModalEndGame.module.css";
 import { Colors } from "../../models/Colors";
 import { Player } from "../../models/Player";
@@ -25,15 +25,18 @@ const EndOfTheGame: FC<EndOfTheGameProps> = ({
   const rootClasses = [cl.myModal];
   if (visible) rootClasses.push(cl.active);
 
-  const winner = currentPlayer?.color === Colors.WHITE
-    ? board.isMate ? "White is checkmated and loses the game" : "White player your time is up"
-    : board.isMate ? "Black is checkmated and loses the game" : "Black player your time is up";
+  const winnerMessage = useMemo(() => {
+    if (!currentPlayer) return "";
+    const playerColor = currentPlayer.color === Colors.WHITE ? "White" : "Black";
+    const loseCondition = board.isMate ? "is checkmated and loses the game" : "player, your time is up";
+    return `${playerColor} ${loseCondition}`;
+  }, [currentPlayer, board.isMate]);
 
-  const newGameStart = () => {
+  const newGameStart = useCallback(() => {
     restart();
     setSelectedCell(null);
     setVisible(false);
-  };
+  }, [restart, setSelectedCell, setVisible]);
 
   return (
     <div className={rootClasses.join(" ")}>
@@ -41,7 +44,7 @@ const EndOfTheGame: FC<EndOfTheGameProps> = ({
         className={cl.myModalContent}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3>{winner}</h3>
+        <h3>{winnerMessage}</h3>
         <button className="c-button" onClick={newGameStart}>
           restart
         </button>
