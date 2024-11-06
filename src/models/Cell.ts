@@ -32,43 +32,31 @@ export class Cell {
         return false;
     }
 
-    isAvailableVertically(target:Cell): boolean {
-        if (this.x !== target.x) {
-            return false;
-        }
-
-        const min = Math.min(this.y, target.y);
-        const max = Math.max(this.y, target.y);
-        for (let y = min + 1; y < max; y++) {
-            if (!this.board.getCell(this.x, y).isEmpty()) {
+    private isAvailableInLine(start: number, end: number, fixed: number, checkVertical: boolean): boolean {
+        const min = Math.min(start, end);
+        const max = Math.max(start, end);
+        for (let i = min + 1; i < max; i++) {
+            const cell = checkVertical ? this.board.getCell(fixed, i) : this.board.getCell(i, fixed);
+            if (!cell.isEmpty()) {
                 return false;
             }
         }
         return true;
     }
 
-    isAvailableHorizontally(target:Cell): boolean {
-        if (this.y !== target.y) {
-            return false;
-        }
+    isAvailableVertically(target: Cell): boolean {
+        return this.x === target.x && this.isAvailableInLine(this.y, target.y, this.x, true);
+    }
 
-        const min = Math.min(this.x, target.x);
-        const max = Math.max(this.x, target.x);
-        for (let x = min + 1; x < max; x++) {
-            if (!this.board.getCell(x, this.y).isEmpty()) {
-                return false;
-            }
-        }
-        return true
+    isAvailableHorizontally(target: Cell): boolean {
+        return this.y === target.y && this.isAvailableInLine(this.x, target.x, this.y, false);
     }
 
     isAvailableDiagonal(target:Cell): boolean {
         const absX = Math.abs(target.x - this.x);
         const absY = Math.abs(target.y - this.y);
-        if (absY !== absX) {
-            return false;
-        }
-
+        if (absY !== absX) return false;
+        
         const dy = this.y < target.y ? 1 : -1;
         const dx = this.x < target.x ? 1 : -1;
 
@@ -93,11 +81,8 @@ export class Cell {
     }
 
     moveFigure(target: Cell) {
-        if (this.figure && this.figure?.canMove(target)) {
-            this.figure.moveFigure(target);
-            if (target.figure) {
-                this.addLostFigure(target.figure);
-            }
+        if (this.figure?.canMove(target)) {
+            if (target.figure) this.addLostFigure(target.figure);
             target.setFigure(this.figure);
             this.figure = null;
         }
